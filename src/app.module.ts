@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { validate } from './config/env.validation';
+import { AppConfigModule } from './config/config.module';
+import { MongodbConfig } from './config/mongodb.config';
 import { AtributosTablaModule } from './modules/atributos-tabla/atributos-tabla.module';
 import { ConfiguracionModule } from './modules/configuracion/configuracion.module';
 import { EntidadModule } from './modules/entidad/entidad.module';
@@ -11,18 +11,15 @@ import { OrquestadorModule } from './modules/orquestador/orquestador.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validate,
-    }),
+    AppConfigModule,
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
+      imports: [AppConfigModule],
+      useFactory: (mongodbConfig: MongodbConfig) => ({
+        uri: mongodbConfig.uri,
         useNewUrlParser: true,
         useUnifiedTopology: true,
       }),
-      inject: [ConfigService],
+      inject: [MongodbConfig],
     }),
     EnumsModule,
     ModuloModule,
@@ -31,7 +28,5 @@ import { OrquestadorModule } from './modules/orquestador/orquestador.module';
     ConfiguracionModule,
     OrquestadorModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
