@@ -8,6 +8,11 @@ import { EntidadModule } from './modules/entidad/entidad.module';
 import { EnumsModule } from './modules/enums/enums.module';
 import { ModuloModule } from './modules/modulo/modulo.module';
 import { OrquestadorModule } from './modules/orquestador/orquestador.module';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { GlobalExceptionFilter } from './core/global-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 @Module({
   imports: [
@@ -16,10 +21,16 @@ import { OrquestadorModule } from './modules/orquestador/orquestador.module';
       imports: [AppConfigModule],
       useFactory: (mongodbConfig: MongodbConfig) => ({
         uri: mongodbConfig.uri,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       }),
       inject: [MongodbConfig],
+    }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: () => ({
+        timeout: 5000,
+        maxRedirects: 5,
+      }),
+      inject: [ConfigService],
     }),
     EnumsModule,
     ModuloModule,
@@ -27,6 +38,16 @@ import { OrquestadorModule } from './modules/orquestador/orquestador.module';
     AtributosTablaModule,
     ConfiguracionModule,
     OrquestadorModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
   ],
 })
 export class AppModule {}

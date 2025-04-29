@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { FiltrosSortingDto } from 'src/common/dto/filtros-sorting.dto';
 import { FiltroModuloDto } from '../../dto/filtro-modulo.dto';
 import { ModuloService } from '../../services/modulo/modulo.service';
@@ -27,7 +27,7 @@ export class ModuloController {
   async create(@Body() filtrosSorting: FiltrosSortingDto<CreateModuloDto>) {
     const { data } = filtrosSorting;
     if (!data) {
-      throw new Error('Data is required');
+      throw new BadRequestException('Data is required');
     }
     const resultado = await this.moduloService.create(data);
 
@@ -38,7 +38,7 @@ export class ModuloController {
   async update(@Body() filtrosSorting: FiltrosSortingDto<UpdateModuloDto & { id: string }>) {
     const { data } = filtrosSorting;
     if (!data) {
-      throw new Error('Data is required');
+      throw new BadRequestException('Data is required');
     }
     const { id, ...updateData } = data;
 
@@ -51,7 +51,7 @@ export class ModuloController {
   async remove(@Body() filtrosSorting: FiltrosSortingDto<{ id: string }>) {
     const { data } = filtrosSorting;
     if (!data) {
-      throw new Error('Data is required');
+      throw new BadRequestException('Data is required');
     }
     const resultado = await this.moduloService.remove(data.id);
 
@@ -62,7 +62,7 @@ export class ModuloController {
   async findOne(@Body() filtrosSorting: FiltrosSortingDto<{ id: string }>) {
     const { data } = filtrosSorting;
     if (!data) {
-      throw new Error('Data is required');
+      throw new BadRequestException('Data is required');
     }
     const resultado = await this.moduloService.findOne(data.id);
 
