@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsMongoId, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Modulo } from '../../modulo/schemas/modulo.schema';
 import { Entidad } from '../../entidad/schemas/entidad.schema';
-import { AtributosTabla } from '../../atributos-tabla/schemas/atributos-tabla.schema';
+import { AtributoTabla } from '../../atributos-tabla/schemas/atributos-tabla.schema';
 
 export class ConfiguracionCompletaDto {
   @IsMongoId()
@@ -18,6 +18,6 @@ export class ConfiguracionCompletaDto {
   entidad: Entidad;
 
   @ValidateNested({ each: true })
-  @Type(() => AtributosTabla)
-  atributos: AtributosTabla[];
+  @Type(() => AtributoTabla)
+  atributos: AtributoTabla[];
 }

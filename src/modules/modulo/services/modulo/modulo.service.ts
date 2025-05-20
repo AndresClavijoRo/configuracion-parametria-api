@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Modulo, ModuloDocument } from '../../schemas/modulo.schema';
 import { Model, SortOrder } from 'mongoose';
+import { CreateModuloDto } from '../../dto/create-modulo.dto';
 import { FiltroModuloDto } from '../../dto/filtro-modulo.dto';
 import { UpdateModuloDto } from '../../dto/update-modulo.dto';
-import { CreateModuloDto } from '../../dto/create-modulo.dto';
+import { Modulo, ModuloDocument } from '../../schemas/modulo.schema';
 
 @Injectable()
 export class ModuloService {
@@ -28,13 +28,19 @@ export class ModuloService {
     const query = this.createQuery(filtros);
     const sort = this.createSort(sorting);
 
-    const [items, total] = await Promise.all([
-      this.moduloModel.find(query).sort(sort).skip(skip).limit(size).exec(),
+    const [modulos, total] = await Promise.all([
+      this.moduloModel
+        .find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(size)
+        .select('-entidades -__v')
+        .exec(),
       this.moduloModel.countDocuments(query).exec(),
     ]);
 
     return {
-      items,
+      response: modulos,
       paginacion: {
         total,
         pagina,
@@ -52,13 +58,26 @@ export class ModuloService {
   async create(createModuloDto: CreateModuloDto) {
     const createdModulo = new this.moduloModel({
       ...createModuloDto,
+      entidades: [],
       fechaCreacion: new Date(),
     });
 
+    const existingModulo = await this.moduloModel
+      .findOne({ nombre: createModuloDto.nombre })
+      .exec();
+
+    if (existingModulo) {
+      throw new BadRequestException('Ya existe una entidad con el mismo nombre');
+    }
+
     const savedModulo = await createdModulo.save();
+
     return {
-      id: savedModulo._id,
-      ...savedModulo.toObject(),
+      response: {
+        ...savedModulo.toObject(),
+        entidades: undefined,
+        __v: undefined,
+      },
     };
   }
 
@@ -68,11 +87,11 @@ export class ModuloService {
    * @returns El módulo encontrado
    */
   async findOne(id: string) {
-    const modulo = await this.moduloModel.findById(id).exec();
+    const modulo = await this.moduloModel.findById(id).select('-entidades -__v').exec();
     if (!modulo) {
-      throw new NotFoundException(`Módulo con ID ${id} no encontrado`);
+      return { response: null, mensaje: 'Modulo no encontrado' };
     }
-    return modulo;
+    return { response: modulo };
   }
 
   /**
@@ -84,7 +103,7 @@ export class ModuloService {
   async update(id: string, updateModuloDto: UpdateModuloDto) {
     const modulo = await this.moduloModel.findById(id).exec();
     if (!modulo) {
-      throw new NotFoundException(`Módulo con ID ${id} no encontrado`);
+      return { response: null, mensaje: 'Modulo no encontrado' };
     }
 
     const updatedModulo = await this.moduloModel
@@ -99,12 +118,23 @@ export class ModuloService {
       .exec();
 
     if (!updatedModulo) {
-      throw new NotFoundException(`Error al actualizar el módulo con ID ${id}`);
+      return null;
+    }
+
+    const existingModulo = await this.moduloModel
+      .findOne({ nombre: updateModuloDto.nombre, _id: { $ne: id } })
+      .exec();
+
+    if (existingModulo) {
+      throw new BadRequestException('Ya existe otro módulo con el mismo nombre');
     }
 
     return {
-      id: updatedModulo._id,
-      ...updatedModulo.toObject(),
+      response: {
+        ...updatedModulo.toObject(),
+        entidades: undefined,
+        __v: undefined,
+      },
     };
   }
 
@@ -116,13 +146,22 @@ export class ModuloService {
   async remove(id: string) {
     const modulo = await this.moduloModel.findById(id).exec();
     if (!modulo) {
-      throw new NotFoundException(`Módulo con ID ${id} no encontrado`);
+      return { response: null, mensaje: 'Modulo no encontrado' };
     }
 
-    await this.moduloModel.findByIdAndDelete(id).exec();
+    await this.moduloModel.findByIdAndUpdate(id, { activo: false }).exec();
     return {
-      success: true,
+      response: true,
     };
+  }
+
+  /**
+   * Guarda un documento de módulo
+   * @param document El documento de módulo a guardar
+   * @returns El documento guardado
+   */
+  async saveDocument(document: ModuloDocument) {
+    return document.save();
   }
 
   /**
@@ -131,7 +170,9 @@ export class ModuloService {
    * @returns Objeto de consulta para MongoDB
    */
   private createQuery(filtros?: FiltroModuloDto): Record<string, any> {
-    const query: Record<string, any> = {};
+    const query: Record<string, any> = {
+      activo: true,
+    };
 
     if (!filtros) return query;
 

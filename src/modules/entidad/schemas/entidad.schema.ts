@@ -1,16 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { TipoOperacion } from '../../../common/enums/tipo-operacion.enum';
+import {
+  AtributoTabla,
+  AtributoTablaSchema,
+} from 'src/modules/atributos-tabla/schemas/atributos-tabla.schema';
 
 export type EntidadDocument = Entidad & Document;
 
-@Schema({
-  timestamps: { createdAt: 'fechaCreacion', updatedAt: 'fechaActualizacion' },
-  collection: 'entidades',
-})
+@Schema({ _id: true, id: true })
 export class Entidad {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Modulo', required: true })
-  moduloId: string;
+  // Agregar la propiedad _id
+  _id?: Types.ObjectId;
 
   @Prop({ required: true })
   nombre: string;
@@ -38,6 +39,10 @@ export class Entidad {
 
   @Prop()
   usuarioActualizacion: string;
+
+  // Array de atributos tabla embebidos
+  @Prop({ type: [AtributoTablaSchema], default: [] })
+  atributosTabla: AtributoTabla[] = [];
 }
 
 export const EntidadSchema = SchemaFactory.createForClass(Entidad);

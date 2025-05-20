@@ -1,36 +1,88 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, Post, Query } from '@nestjs/common';
 import { FiltrosSortingDto } from 'src/common/dto/filtros-sorting.dto';
 import { ResponseDto } from 'src/common/dto/response.dto';
-import { FiltroEntidadDto } from '../../dto/filtro-entidad.dto';
-import { EntidadService } from '../../services/entidad/entidad.service';
 import { CreateEntidadDto } from '../../dto/create-entidad.dto';
+import { FiltroEntidadDto } from '../../dto/filtro-entidad.dto';
 import { UpdateEntidadDto } from '../../dto/update-entidad.dto';
+import { EntidadService } from '../../services/entidad/entidad.service';
 
 @Controller('entidad')
 export class EntidadController {
   constructor(private readonly entidadService: EntidadService) {}
 
   @Post('listar')
-  findAll(@Body() filtrosSorting: FiltrosSortingDto<FiltroEntidadDto>) {
-    // Implementación del servicio para obtener entidades con paginación y filtros
-    return new ResponseDto({ items: [], total: 0 });
+  @HttpCode(200)
+  async findAll(
+    @Query('idModulo') idModulo: string,
+    @Body() filtrosSorting: FiltrosSortingDto<FiltroEntidadDto>,
+  ) {
+    const { filtros, paginacion, sorting } = filtrosSorting;
+    const resultado = await this.entidadService.findAll(
+      idModulo,
+      filtros,
+      paginacion?.pagina,
+      paginacion?.size,
+      sorting,
+    );
+
+    return new ResponseDto(resultado);
   }
 
   @Post('crear')
-  create(@Body() filtrosSorting: FiltrosSortingDto<CreateEntidadDto>) {
-    // Implementación del servicio para crear una entidad
-    return new ResponseDto({ id: 'nuevo-id-generado' });
+  async create(
+    @Query('idModulo') idModulo: string,
+    @Body() filtrosSorting: FiltrosSortingDto<CreateEntidadDto>,
+  ) {
+    const { data } = filtrosSorting;
+    if (!data) {
+      throw new BadRequestException('Data is required');
+    }
+    const resultado = await this.entidadService.create(idModulo, data);
+
+    return new ResponseDto(resultado);
   }
 
   @Post('actualizar')
-  update(@Body() filtrosSorting: FiltrosSortingDto<UpdateEntidadDto>) {
-    // Implementación del servicio para actualizar una entidad
-    return new ResponseDto({ success: true });
+  @HttpCode(200)
+  async update(
+    @Query('idModulo') idModulo: string,
+    @Body() filtrosSorting: FiltrosSortingDto<UpdateEntidadDto & { _id: string }>,
+  ) {
+    if (!idModulo) {
+      throw new BadRequestException('idModulo is required');
+    }
+    const { data } = filtrosSorting;
+    if (!data) {
+      throw new BadRequestException('Data is required');
+    }
+
+    const { _id, ...updateData } = data;
+
+    const resultado = await this.entidadService.update(idModulo, _id, updateData);
+    return new ResponseDto(resultado);
   }
 
   @Post('eliminar')
-  remove(@Body() filtrosSorting: FiltrosSortingDto<{ id: string }>) {
-    // Implementación del servicio para eliminar una entidad
-    return new ResponseDto({ success: true });
+  @HttpCode(200)
+  async remove(@Body() filtrosSorting: FiltrosSortingDto<{ _id: string }>) {
+    const { data } = filtrosSorting;
+    if (!data) {
+      throw new BadRequestException('Data is required');
+    }
+    const resultado = await this.entidadService.remove(data._id);
+
+    return new ResponseDto(resultado);
+  }
+
+  @Post('obtener')
+  @HttpCode(200)
+  async findOne(@Body() filtrosSorting: FiltrosSortingDto<{ _id: string }>) {
+    const { data } = filtrosSorting;
+    if (!data) {
+      throw new BadRequestException('Data is required');
+    }
+    const resultado = await this.entidadService.findOne(data._id);
+
+    return new ResponseDto(resultado);
   }
 }

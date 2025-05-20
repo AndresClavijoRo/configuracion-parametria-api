@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { TipoConexion } from '../../../common/enums/tipo-conexion.enum';
+import { Entidad, EntidadSchema } from 'src/modules/entidad/schemas/entidad.schema';
 
 export type ModuloDocument = Modulo & Document;
 
@@ -26,6 +27,10 @@ export class Modulo {
 
   @Prop({ default: true })
   activo: boolean;
+
+  // Array de entidades embebidas
+  @Prop({ type: [EntidadSchema], default: [] })
+  entidades: Entidad[];
 
   @Prop()
   fechaCreacion: Date;

@@ -1,9 +1,9 @@
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsMongoId, IsOptional, IsString } from 'class-validator';
 
 export class FiltroAtributosTablaDto {
   @IsMongoId()
   @IsOptional()
-  entidadId?: string;
+  _id?: string;
 
   @IsString()
   @IsOptional()
@@ -17,23 +17,31 @@ export class FiltroAtributosTablaDto {
   @IsOptional()
   tipoDato?: string;
 
-  @IsString()
+  @IsBoolean()
   @IsOptional()
-  esPrimario?: string;
+  esPrimario?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  esRequerido?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  esBuscable?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  esVisible?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  esEditable?: boolean;
 
   @IsString()
   @IsOptional()
-  esRequerido?: string;
+  secuencia?: string;
 
-  @IsString()
   @IsOptional()
-  esBuscable?: string;
-
-  @IsString()
-  @IsOptional()
-  esVisible?: string;
-
-  @IsString()
-  @IsOptional()
-  esEditable?: string;
+  @IsString({ each: true })
+  opciones?: string[];
 }

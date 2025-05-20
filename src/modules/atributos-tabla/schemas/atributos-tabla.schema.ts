@@ -1,16 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { TipoDato } from '../../../common/enums/tipo-dato.enum';
 
-export type AtributosTablaDocument = AtributosTabla & Document;
+export type AtributoTablaDocument = AtributoTabla & Document;
 
-@Schema({
-  timestamps: { createdAt: 'fechaCreacion', updatedAt: 'fechaActualizacion' },
-  collection: 'atributosTabla',
-})
-export class AtributosTabla {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Entidad', required: true })
-  entidadId: string;
+@Schema({ _id: true, id: true })
+export class AtributoTabla {
+  // Agregar la propiedad _id
+  _id?: Types.ObjectId;
 
   @Prop({ required: true })
   nombre: string;
@@ -21,8 +18,8 @@ export class AtributosTabla {
   @Prop({ type: String, enum: Object.values(TipoDato), required: true })
   tipoDato: TipoDato;
 
-  @Prop({ type: [String], default: [] })
-  opciones: string[];
+  @Prop({ type: [String], default: null })
+  opciones?: string[];
 
   @Prop({ default: false })
   esPrimario: boolean;
@@ -40,7 +37,7 @@ export class AtributosTabla {
   esEditable: boolean;
 
   @Prop()
-  secuencia: string;
+  secuencia?: string;
 
   @Prop()
   fechaCreacion: Date;
@@ -49,10 +46,13 @@ export class AtributosTabla {
   usuarioCreacion: string;
 
   @Prop()
-  fechaActualizacion: Date;
+  fechaActualizacion?: Date;
 
   @Prop()
-  usuarioActualizacion: string;
+  usuarioActualizacion?: string;
+
+  @Prop({ default: true })
+  activo: boolean;
 }
 
-export const AtributosTablaSchema = SchemaFactory.createForClass(AtributosTabla);
+export const AtributoTablaSchema = SchemaFactory.createForClass(AtributoTabla);

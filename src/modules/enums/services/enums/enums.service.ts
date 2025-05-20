@@ -7,20 +7,22 @@ import { TipoOperacion } from 'src/common/enums/tipo-operacion.enum';
 export class EnumsService {
   getEnums() {
     return {
-      tipoConexion: Object.values(TipoConexion),
-      tipoDato: Object.values(TipoDato),
-      tipoOperacion: Object.values(TipoOperacion),
+      response: {
+        tipoConexion: Object.values(TipoConexion),
+        tipoDato: Object.values(TipoDato),
+        tipoOperacion: Object.values(TipoOperacion),
+      },
     };
   }
 
   getEnum(nombreEnum: string) {
     switch (nombreEnum) {
       case 'tipoConexion':
-        return Object.values(TipoConexion);
+        return { response: Object.values(TipoConexion) };
       case 'tipoDato':
-        return Object.values(TipoDato);
+        return { response: Object.values(TipoDato) };
       case 'tipoOperacion':
-        return Object.values(TipoOperacion);
+        return { response: Object.values(TipoOperacion) };
       default:
         throw new Error(
           `Enum ${nombreEnum} no encontrado los disponibles son: tipoConexion, tipoDato, tipoOperacion`,

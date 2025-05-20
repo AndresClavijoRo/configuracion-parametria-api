@@ -1,10 +1,7 @@
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { TipoOperacion } from 'src/common/enums/tipo-operacion.enum';
 
 export class FiltroEntidadDto {
-  @IsMongoId()
-  @IsOptional()
-  moduloId?: string;
-
   @IsString()
   @IsOptional()
   nombre?: string;
@@ -17,7 +14,11 @@ export class FiltroEntidadDto {
   @IsOptional()
   descripcion?: string;
 
-  @IsString()
   @IsOptional()
-  activo?: string;
+  @IsEnum(TipoOperacion, { each: true })
+  operaciones?: TipoOperacion[];
+
+  @IsOptional()
+  @IsMongoId()
+  _id?: string;
 }

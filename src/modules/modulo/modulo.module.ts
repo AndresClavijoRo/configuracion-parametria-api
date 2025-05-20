@@ -8,6 +8,9 @@ import { Modulo, ModuloSchema } from './schemas/modulo.schema';
   imports: [MongooseModule.forFeature([{ name: Modulo.name, schema: ModuloSchema }])],
   controllers: [ModuloController],
   providers: [ModuloService],
-  exports: [ModuloService],
+  exports: [
+    ModuloService,
+    MongooseModule.forFeature([{ name: Modulo.name, schema: ModuloSchema }]),
+  ],
 })
 export class ModuloModule {}

@@ -1,60 +1,8 @@
-import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { TipoDato } from '../../../common/enums/tipo-dato.enum';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { AtributosTablaBaseDto } from './atributo-tabla-base.dto';
 
-export class CreateAtributosTablaDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  entidadId: string;
-
+export class CreateAtributosTablaDto extends AtributosTablaBaseDto {
   @IsString()
   @IsNotEmpty()
-  nombre: string;
-
-  @IsString()
-  @IsNotEmpty()
-  nombreColumna: string;
-
-  @IsEnum(TipoDato)
-  @IsNotEmpty()
-  tipoDato: TipoDato;
-
-  @IsArray()
-  @IsOptional()
-  opciones?: string[];
-
-  @IsBoolean()
-  @IsOptional()
-  esPrimario?: boolean = false;
-
-  @IsBoolean()
-  @IsOptional()
-  esRequerido?: boolean = false;
-
-  @IsBoolean()
-  @IsOptional()
-  esBuscable?: boolean = false;
-
-  @IsBoolean()
-  @IsOptional()
-  esVisible?: boolean = true;
-
-  @IsBoolean()
-  @IsOptional()
-  esEditable?: boolean = true;
-
-  @IsString()
-  @IsOptional()
-  secuencia?: string;
-
-  @IsString()
-  @IsOptional()
-  usuarioCreacion?: string;
+  usuarioCreacion: string;
 }
