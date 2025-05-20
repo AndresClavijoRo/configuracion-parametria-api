@@ -1,5 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { FiltrosSortingDto } from 'src/common/dto/filtros-sorting.dto';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { ResponseDto } from 'src/common/dto/response.dto';
 import { ConfiguracionService } from '../../services/configuracion/configuracion.service';
 
@@ -7,13 +6,23 @@ import { ConfiguracionService } from '../../services/configuracion/configuracion
 export class ConfiguracionController {
   constructor(private readonly configuracionService: ConfiguracionService) {}
 
-  @Post('completa')
-  obtenerConfiguracionCompleta(@Body() filtrosSorting: FiltrosSortingDto<{ entidadId: string }>) {
-    // Implementación del servicio para obtener la configuración completa de una entidad
-    return new ResponseDto({
-      modulo: {},
-      entidad: {},
-      atributos: [],
-    });
+  @Get('obtener')
+  async obtenerConfiguracionCompleta(@Query('idEntidad') idEntidad: string) {
+    if (!idEntidad) {
+      throw new BadRequestException('El QueryParam idEntidad es requerido');
+    }
+
+    const resultado = await this.configuracionService.getConfiguracion(idEntidad);
+    return new ResponseDto(resultado);
+  }
+
+  @Get('obtenerPorModulo')
+  obtenerConfiguracionPorModulo(@Query('idModulo') idModulo: string) {
+    if (!idModulo) {
+      throw new BadRequestException('El QueryParam idModulo es requerido');
+    }
+
+    const resultado = this.configuracionService.getConfiguracionPorModulo(idModulo);
+    return new ResponseDto(resultado);
   }
 }
