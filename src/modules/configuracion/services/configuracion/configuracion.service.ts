@@ -17,6 +17,10 @@ export class ConfiguracionService {
       return { response: null, mensaje: 'Modulo no encontrado' };
     }
 
+    modulo.entidades = modulo.entidades.filter(
+      (entidad) => entidad._id && entidad._id.toString() === idEntidad.toString(),
+    );
+
     return modulo.toObject();
   }
 
