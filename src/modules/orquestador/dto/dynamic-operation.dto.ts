@@ -6,6 +6,7 @@ import {
   ValidateNested,
   IsObject,
   IsArray,
+  IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TipoOperacion } from 'src/common/enums/tipo-operacion.enum';
@@ -113,6 +114,11 @@ export class DynamicOperationDto {
   @ValidateNested()
   @Type(() => EntityDefinitionDto)
   entityDefinition: EntityDefinitionDto;
+
+  @IsOptional()
+  @IsString()
+  @IsUrl({}, { message: 'El endpoint debe ser una URL válida' })
+  endpoint?: string;
 
   @IsOptional()
   @IsObject()
