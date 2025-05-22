@@ -27,12 +27,15 @@ export class OrquestadorService {
       const { endpoint, ...templateOperation } = operacion;
 
       const response = await firstValueFrom(
-        this.httpService.post(`${endpoint}/crud`, templateOperation, {
-          headers: {
-            'Content-Type': 'application/json',
+        this.httpService.post(
+          `${endpoint}/service/pendig/transversales/template-parametria/api/v1/crud`,
+          templateOperation,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
           },
-          timeout: 30000, // 30 segundos de timeout
-        }),
+        ),
       );
 
       return new ResponseDto(

@@ -100,10 +100,10 @@ export class EntityDefinitionDto {
 
 export class PaginationOptionsDto {
   @IsOptional()
-  page?: number = 1;
+  pagina?: number = 1;
 
   @IsOptional()
-  limit?: number = 10;
+  size?: number = 10;
 }
 
 export class SortingOptionsDto {
@@ -135,7 +135,7 @@ export class DynamicOperationDto {
 
   @IsOptional()
   @IsObject()
-  filters?: any;
+  filtros?: any;
 
   @IsOptional()
   @IsObject()
@@ -147,7 +147,7 @@ export class DynamicOperationDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => PaginationOptionsDto)
-  pagination?: PaginationOptionsDto;
+  paginacion?: PaginationOptionsDto;
 
   @IsOptional()
   @IsArray()
