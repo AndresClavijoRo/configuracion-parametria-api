@@ -27,7 +27,7 @@ export class OrquestadorService {
       const { endpoint, ...templateOperation } = operacion;
 
       const response = await firstValueFrom(
-        this.httpService.post(endpoint, templateOperation, {
+        this.httpService.post(`${endpoint}/crud`, templateOperation, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -36,10 +36,7 @@ export class OrquestadorService {
       );
 
       return new ResponseDto(
-        {
-          response: response.data?.data || response.data,
-          meta: response.data?.meta,
-        },
+        response.data?.data || null,
         response.status,
         response.data?.status?.statusDescription || 'Operación ejecutada exitosamente',
       );

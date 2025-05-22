@@ -7,6 +7,8 @@ import {
   IsObject,
   IsArray,
   IsUrl,
+  IsBoolean,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TipoOperacion } from 'src/common/enums/tipo-operacion.enum';
@@ -38,18 +40,23 @@ export class FieldDefinitionDto {
   type: TipoDato;
 
   @IsOptional()
+  @IsBoolean()
   isPrimary?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   isRequired?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   isSearchable?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   isVisible?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   isEditable?: boolean;
 
   @IsOptional()
@@ -59,6 +66,7 @@ export class FieldDefinitionDto {
   validationRules?: ValidationRuleDto[];
 
   @IsOptional()
+  @IsBoolean()
   isAutoIncremental?: boolean;
 
   @IsOptional()
@@ -86,6 +94,7 @@ export class EntityDefinitionDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => FieldDefinitionDto)
+  @IsNotEmpty()
   fields: FieldDefinitionDto[];
 }
 
@@ -109,16 +118,20 @@ export class SortingOptionsDto {
 
 export class DynamicOperationDto {
   @IsEnum(TipoOperacion)
+  @IsNotEmpty()
   type: TipoOperacion;
 
   @ValidateNested()
   @Type(() => EntityDefinitionDto)
+  @IsNotEmpty()
   entityDefinition: EntityDefinitionDto;
 
-  @IsOptional()
   @IsString()
-  @IsUrl({}, { message: 'El endpoint debe ser una URL válida' })
-  endpoint?: string;
+  @IsNotEmpty()
+  @Matches(/^https?:\/\/.+/, {
+    message: 'El endpoint debe ser una URL válida que comience con http:// o https://',
+  })
+  endpoint: string;
 
   @IsOptional()
   @IsObject()
