@@ -9,9 +9,7 @@ export class OrquestadorController {
 
   @Post('ejecutar')
   ejecutarOperacion(@Body() operacion: DynamicOperationDto) {
-    // Implementación del servicio para ejecutar una operación en la API CRUD
-    return new ResponseDto({
-      resultado: {},
-    });
+    const result = this.orquestadorService.ejecutarOperacion(operacion);
+    return result;
   }
 }

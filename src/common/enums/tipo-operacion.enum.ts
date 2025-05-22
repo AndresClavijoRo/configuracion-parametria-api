@@ -5,4 +5,5 @@ export enum TipoOperacion {
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
   PATCH = 'PATCH',
+  GET_COLUMNS = 'GET_COLUMNS',
 }

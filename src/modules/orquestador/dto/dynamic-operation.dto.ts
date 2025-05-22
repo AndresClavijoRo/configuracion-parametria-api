@@ -1,61 +1,138 @@
-import { IsEnum, IsNotEmpty, IsObject, IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  IsObject,
+  IsArray,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { TipoOperacion } from '../../../common/enums/tipo-operacion.enum';
+import { TipoOperacion } from 'src/common/enums/tipo-operacion.enum';
+import { TipoDato } from 'src/common/enums/tipo-dato.enum';
 
-class EntityFieldDto {
-  name: string;
-  columnName: string;
+export class ValidationRuleDto {
+  @IsString()
+  @IsNotEmpty()
   type: string;
-  isVisible: boolean;
-  isPrimary?: boolean;
+
+  @IsNotEmpty()
+  value: any;
+
+  @IsString()
+  @IsOptional()
+  message?: string;
 }
 
-class EntityDefinitionDto {
+export class FieldDefinitionDto {
+  @IsString()
+  @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  columnName: string;
+
+  @IsEnum(TipoDato)
+  type: TipoDato;
+
+  @IsOptional()
+  isPrimary?: boolean;
+
+  @IsOptional()
+  isRequired?: boolean;
+
+  @IsOptional()
+  isSearchable?: boolean;
+
+  @IsOptional()
+  isVisible?: boolean;
+
+  @IsOptional()
+  isEditable?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ValidationRuleDto)
+  validationRules?: ValidationRuleDto[];
+
+  @IsOptional()
+  isAutoIncremental?: boolean;
+
+  @IsOptional()
+  @IsString()
+  sequency?: string;
+}
+
+export class EntityDefinitionDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
   tableName: string;
-  description: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsNotEmpty()
   connectionId: string;
 
+  @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => EntityFieldDto)
-  fields: EntityFieldDto[];
+  @Type(() => FieldDefinitionDto)
+  fields: FieldDefinitionDto[];
 }
 
-class PaginationDto {
-  page: number;
-  limit: number;
+export class PaginationOptionsDto {
+  @IsOptional()
+  page?: number = 1;
+
+  @IsOptional()
+  limit?: number = 10;
 }
 
-class SortingItemDto {
+export class SortingOptionsDto {
+  @IsString()
+  @IsNotEmpty()
   field: string;
-  direction: 'ASC' | 'DESC';
+
+  @IsString()
+  @IsEnum(['ASC', 'DESC'])
+  direction: 'ASC' | 'DESC' = 'ASC';
 }
 
 export class DynamicOperationDto {
   @IsEnum(TipoOperacion)
-  @IsNotEmpty()
   type: TipoOperacion;
 
   @ValidateNested()
   @Type(() => EntityDefinitionDto)
-  @IsNotEmpty()
   entityDefinition: EntityDefinitionDto;
 
-  @IsObject()
   @IsOptional()
-  filters?: Record<string, any>;
-
   @IsObject()
-  @IsOptional()
-  data?: Record<string, any>;
+  filters?: any;
 
+  @IsOptional()
+  @IsObject()
+  data?: any;
+
+  @IsOptional()
+  id?: any;
+
+  @IsOptional()
   @ValidateNested()
-  @Type(() => PaginationDto)
-  @IsOptional()
-  pagination?: PaginationDto;
+  @Type(() => PaginationOptionsDto)
+  pagination?: PaginationOptionsDto;
 
-  @ValidateNested({ each: true })
-  @Type(() => SortingItemDto)
   @IsOptional()
-  sorting?: SortingItemDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SortingOptionsDto)
+  sorting?: SortingOptionsDto[];
 }
