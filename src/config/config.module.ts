@@ -1,16 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { MongodbConfig } from './mongodb.config';
-import { validate } from './env.validation';
+import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import { validationSchema } from './validation.schema';
+import appConfig from './configurations/app.config';
+import databaseConfig from './configurations/database.config';
+import * as path from 'path';
+import { ConfigService } from './config.service';
+const env = process.env.ENV || 'local';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
+    NestConfigModule.forRoot({
       isGlobal: true,
-      validate,
+      ...(env === 'local' && {
+        envFilePath: path.resolve(__dirname, '../../.local.env'),
+      }),
+      load: [appConfig, databaseConfig],
+      validationSchema,
     }),
   ],
-  providers: [MongodbConfig],
-  exports: [MongodbConfig],
+  providers: [ConfigService],
+  exports: [ConfigService],
 })
 export class AppConfigModule {}

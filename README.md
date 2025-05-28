@@ -1,98 +1,504 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API de Configuración Paramétrica
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+<div>
+    <img src="https://www.porvenir.com.co/o/Zona-Publica-Theme/images/ZonaPublica/logo_porvenir.svg" width="250px" alt="Logo Porvenir"/>
+</div>
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Autor:** Equipo de Desarrollo Porvenir
 
-## Description
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-blue)](https://nodejs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11.x-red)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+[![NPM](https://img.shields.io/badge/NPM-11.x-blue)](https://www.npmjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-v8.7.1-green.svg)](https://www.mongodb.com/)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## **Introducción**
 
-## Project setup
+La API de Configuración Paramétrica es el componente central del Sistema CRUD Configurable que permite gestionar la configuración de entidades, campos, operaciones y relaciones. Esta API facilita la definición de módulos que representan diferentes fuentes de datos y sus respectivas entidades con sus atributos, permitiendo la ejecución dinámica de operaciones CRUD.
 
-```bash
-$ npm install
+### **Información del Servicio**
+
+- **Nombre del servicio:** `pendig-ms-configuracion-parametria-nodejs`
+- **Puerto por defecto:** 3100
+- **Base de datos:** MongoDB
+
+### **Descripción**
+
+- **Funcionalidad Principal:** Gestión de configuraciones paramétricas para operaciones CRUD dinámicas
+- **Conexión Base de datos:** MongoDB (almacena todas las configuraciones)
+
+### **Especificaciones Técnicas**
+
+#### **Tecnología a Utilizar**
+
+- **Lenguaje de Programación:** Node.js 22.12.0 - TypeScript 5.7.3
+- **Framework:** NestJS 11.0.1
+- **Base de Datos:** MongoDB 8.7.1
+- **Contenedores:** Docker
+- **Orquestador de Contenedores:** Kubernetes (AKS - Azure Kubernetes Service)
+
+## **Arquitectura del Sistema**
+
+### **1. Diagrama de Arquitectura General**
+
+```mermaid
+flowchart TB
+    subgraph "API de Configuración"
+        config[Gestión de Configuraciones]
+        entities[Entidades]
+        fields[Campos]
+        operations[Operaciones]
+        relationships[Relaciones]
+        db1[(Base de datos\nde configuración)]
+        
+        config --> entities
+        config --> fields
+        config --> operations
+        config --> relationships
+        
+        entities --> db1
+        fields --> db1
+        operations --> db1
+        relationships --> db1
+    end
+    
+    subgraph "API CRUD (Plantilla)"
+        crud[Controladores CRUD]
+        dynamicOps[Operaciones Dinámicas]
+        env[Variables de Entorno]
+        dbAccess[Acceso a DB]
+        dynamicEntities[Entidades Dinámicas]
+        
+        env --> dbAccess
+        crud --> dynamicOps
+        dynamicOps --> dbAccess
+        dbAccess --> dynamicEntities
+    end
+    
+    subgraph "Base de Datos del Cliente"
+        clientDB[(Base de datos\nconfigurada por\nvariables de entorno)]
+    end
+    
+    operations -- "Solicita operación" --> crud
+    crud -- "Ejecuta operación" --> clientDB
+    clientDB -- "Devuelve resultados" --> crud
+    crud -- "Retorna resultados" --> operations
+    
+    Usuario((Usuario)) -- "Configura" --> config
+    Usuario -- "Solicita datos" --> operations
 ```
 
-## Compile and run the project
+### **2. Modelo de Datos - Configuración Paramétrica**
 
-```bash
-# development
-$ npm run start
+```mermaid
+erDiagram
+    modulo ||--o{ Entidad : "Contiene"
+    Entidad ||--o{ AtributosTabla : "Define"
 
-# watch mode
-$ npm run start:dev
+    modulo {
+        UUID id PK "Identificador único"
+        string nombre "Nombre descriptivo de la fuente de datos"
+        string descripcion "Descripción detallada de la fuente de datos"
+        enum tipoConexion "mysql|postgres|mongodb|sqlserver|oracle"
+        string database "nombre de la base de datos del .env"
+        string apiEndpoint "URL de la API CRUD implementada"
+        boolean activo "Indica si la fuente de datos está activa o no"
+        timestamp fechaCreacion "Fecha y hora de creación del registro"
+        string usuarioCreacion "Usuario Creacion del registro"
+        timestamp fechaActualizacion "Fecha y hora de última actualización"
+        string usuarioActualizacion "Usuario actualización del registro"
+    }
 
-# production mode
-$ npm run start:prod
+    Entidad {
+        UUID id PK "Identificador único"
+        UUID moduloId FK "Identificador del módulo que pertenece"
+        string nombre "Nombre amigable de la entidad"
+        string nombreTabla "Nombre real de la tabla en BD"
+        string descripcion "Descripción detallada de la entidad"
+        boolean activo "Indica si la entidad está activa o no"
+        array operaciones "Lista de operaciones permitidas GET_ONE|GET_MANY|CREATE|UPDATE|DELETE|PATCH"
+        timestamp fechaCreacion "Fecha y hora de creación del registro"
+        string usuarioCreacion "Usuario Creacion del registro"
+        timestamp fechaActualizacion "Fecha y hora de última actualización"
+        string usuarioActualizacion "Usuario actualización del registro"
+    }
+
+    AtributosTabla {
+        UUID id PK "Identificador único"
+        UUID entidadId FK "Referencia a la entidad"
+        string nombre "Nombre amigable del campo"
+        string nombreColumna "Nombre real de la columna en BD"
+        enum tipoDato "string|number|boolean|date"
+        array opciones "Opciones para campo este es un arreglo de strings"
+        boolean esPrimario "Indica si el campo es clave primaria"
+        boolean esRequerido "Indica si el campo es obligatorio"
+        boolean esBuscable "Indica si se puede buscar por este campo"
+        boolean esVisible "Indica si el campo se muestra en listados"
+        boolean esEditable "Indica si el campo puede ser editado"
+        string secuencia "Indica si se debe usar una secuencia para el campo"
+        timestamp fechaCreacion "Fecha y hora de creación del registro"
+        string usuarioCreacion "Usuario Creacion del registro"
+        timestamp fechaActualizacion "Fecha y hora de última actualización"
+        string usuarioActualizacion "Usuario actualización del registro"
+    }
 ```
 
-## Run tests
+### **3. Diagrama de Secuencia - Flujo de Configuración y Orquestación**
 
-```bash
-# unit tests
-$ npm run test
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant ConfigAPI as API Configuración
+    participant MongoDB as MongoDB (Config)
+    participant OrquestadorService as Servicio Orquestador
+    participant TemplateAPI as API Template (HTTP)
 
-# e2e tests
-$ npm run test:e2e
+    %% Configuración de módulo y entidades
+    Note over Usuario, MongoDB: Fase 1: Configuración
+    Usuario->>ConfigAPI: POST /modulo/crear
+    ConfigAPI->>MongoDB: Crear módulo
+    MongoDB-->>ConfigAPI: Módulo creado
+    ConfigAPI-->>Usuario: Confirmación
 
-# test coverage
-$ npm run test:cov
+    Usuario->>ConfigAPI: POST /entidad/crear?idModulo=xyz
+    ConfigAPI->>MongoDB: Crear entidad en módulo
+    MongoDB-->>ConfigAPI: Entidad creada
+    ConfigAPI-->>Usuario: Confirmación
+
+    Usuario->>ConfigAPI: POST /atributo-tabla/crear?idEntidad=abc
+    ConfigAPI->>MongoDB: Crear atributos de tabla
+    MongoDB-->>ConfigAPI: Atributos creados
+    ConfigAPI-->>Usuario: Confirmación
+
+    %% Ejecución de operación CRUD a través del orquestador
+    Note over Usuario, TemplateAPI: Fase 2: Ejecución de Operación CRUD
+    Usuario->>ConfigAPI: POST /orquestador/ejecutar
+    ConfigAPI->>MongoDB: Obtener configuración completa
+    MongoDB-->>ConfigAPI: Configuración de entidad y atributos
+
+    ConfigAPI->>OrquestadorService: Procesar operación
+    Note over OrquestadorService: Construir payload para Template API
+
+    OrquestadorService->>TemplateAPI: POST /crud (HTTP Request)
+    Note over TemplateAPI: Ejecutar operación dinámica en BD objetivo
+    TemplateAPI-->>OrquestadorService: Respuesta con datos
+
+    OrquestadorService-->>ConfigAPI: Resultado de operación
+    ConfigAPI-->>Usuario: Datos finales
+
+    %% Verificación de salud del template
+    Note over Usuario, TemplateAPI: Verificación de Conectividad
+    Usuario->>ConfigAPI: GET /orquestador/health?endPoint=url
+    ConfigAPI->>OrquestadorService: Verificar conectividad
+    OrquestadorService->>TemplateAPI: GET /health (HTTP Request)
+    TemplateAPI-->>OrquestadorService: Estado del servicio
+    OrquestadorService-->>ConfigAPI: Estado de conectividad
+    ConfigAPI-->>Usuario: Resultado de verificación
 ```
 
-## Deployment
+## **Endpoints Principales**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### **Gestión de Módulos**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+#### **Crear Módulo**
 
-```bash
-$ npm install -g mau
-$ mau deploy
+```http
+POST /service/pendig/transversales/conf-parametria/api/v1/modulo/crear
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Body:**
 
-## Resources
+```json
+{
+  "data": {
+    "nombre": "Sistema de Usuarios",
+    "descripcion": "Módulo para gestión de usuarios",
+    "tipoConexion": "oracle",
+    "database": "ORACLE_MAIN",
+    "apiEndpoint": "http://localhost:3001/api/v1",
+    "usuarioCreacion": "admin"
+  }
+}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+#### **Listar Módulos**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```http
+POST /service/pendig/transversales/conf-parametria/api/v1/modulo/listar
+```
 
-## Support
+**Body:**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```json
+{
+  "filtros": {
+    "nombre": "Sistema",
+    "activo": "true"
+  },
+  "paginacion": {
+    "pagina": 1,
+    "size": 10
+  },
+  "sorting": {
+    "fechaCreacion": "DESC"
+  }
+}
+```
 
-## Stay in touch
+### **Gestión de Entidades**
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### **Crear Entidad**
 
-## License
+```http
+POST /service/pendig/transversales/conf-parametria/api/v1/entidad/crear?idModulo={id}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Body:**
+
+```json
+{
+  "data": {
+    "nombre": "Usuario",
+    "nombreTabla": "USUARIOS",
+    "descripcion": "Tabla de usuarios del sistema",
+    "operaciones": ["GET_ONE", "GET_MANY", "CREATE", "UPDATE", "DELETE"],
+    "usuarioCreacion": "admin"
+  }
+}
+```
+
+### **Gestión de Atributos**
+
+#### **Crear Atributo de Tabla**
+
+```http
+POST /service/pendig/transversales/conf-parametria/api/v1/atributo-tabla/crear?idEntidad={id}
+```
+
+**Body:**
+
+```json
+{
+  "data": {
+    "nombre": "ID Usuario",
+    "nombreColumna": "ID_USUARIO",
+    "tipoDato": "number",
+    "esPrimario": true,
+    "esRequerido": true,
+    "esVisible": true,
+    "esEditable": false,
+    "secuencia": "SEQ_USUARIO",
+    "usuarioCreacion": "admin"
+  }
+}
+```
+
+### **Orquestador de Operaciones**
+
+#### **Ejecutar Operación CRUD**
+
+```http
+POST /service/pendig/transversales/conf-parametria/api/v1/orquestador/ejecutar
+```
+
+**Body:**
+
+```json
+{
+  "type": "GET_MANY",
+  "endpoint": "http://localhost:3001/api/v1",
+  "entityDefinition": {
+    "name": "usuarios",
+    "tableName": "USUARIOS",
+    "connectionId": "oracle_main",
+    "fields": [
+      {
+        "name": "ID",
+        "columnName": "ID_USUARIO",
+        "type": "number",
+        "isPrimary": true,
+        "isVisible": true
+      },
+      {
+        "name": "Nombre",
+        "columnName": "NOMBRE",
+        "type": "string",
+        "isVisible": true,
+        "isSearchable": true
+      }
+    ]
+  },
+  "filters": {
+    "NOMBRE": "Juan"
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 10
+  }
+}
+```
+
+#### **Verificar Conectividad con Template**
+
+```http
+GET /service/pendig/transversales/conf-parametria/api/v1/orquestador/health?endPoint=http://localhost:3001/api/v1
+```
+
+### **Configuración Completa**
+
+#### **Obtener Configuración de Entidad**
+
+```http
+GET /service/pendig/transversales/conf-parametria/api/v1/configuracion/obtener?idEntidad={id}
+```
+
+## **Enumeraciones del Sistema**
+
+### **Tipos de Conexión**
+
+- `mysql`
+- `postgres`
+- `mongodb`
+- `sqlserver`
+- `oracle`
+
+### **Tipos de Datos**
+
+- `string`
+- `number`
+- `boolean`
+- `date`
+
+### **Tipos de Operación**
+
+- `GET_ONE`
+- `GET_MANY`
+- `CREATE`
+- `UPDATE`
+- `DELETE`
+- `PATCH`
+- `GET_COLUMNS`
+
+## **Estructura de Archivos**
+
+```
+src/
+├── app.module.ts
+├── main.ts
+├── config/
+│   ├── config.module.ts
+│   ├── mongodb.config.ts
+│   └── env.validation.ts
+├── modules/
+│   ├── modulo/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── schemas/
+│   │   └── dto/
+│   ├── entidad/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── schemas/
+│   │   └── dto/
+│   ├── atributos-tabla/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── schemas/
+│   │   └── dto/
+│   ├── configuracion/
+│   │   ├── controllers/
+│   │   └── services/
+│   ├── orquestador/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   └── dto/
+│   └── enums/
+├── common/
+│   ├── dto/
+│   ├── enums/
+│   └── interceptors/
+└── core/
+    └── global-exception.filter.ts
+```
+
+## **Variables de Entorno**
+
+```bash
+# Configuración de la aplicación
+PORT=3100
+NODE_ENV=development
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/config-api
+
+# API Template CRUD
+API_CRUD_URL=http://localhost:3001/api/v1
+```
+
+## **Comandos Útiles**
+
+### **Desarrollo**
+
+```bash
+npm run start:dev
+```
+
+### **Compilar**
+
+```bash
+npm run build
+```
+
+### **Producción**
+
+```bash
+npm run start:prod
+```
+
+### **Tests**
+
+```bash
+npm run test
+npm run test:e2e
+```
+
+## **Instalación y Configuración**
+
+1. **Clonar el repositorio**
+2. **Instalar dependencias:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno:**
+
+   ```bash
+   cp .env.example .env
+   # Editar .env con tus configuraciones
+   ```
+
+4. **Iniciar MongoDB**
+5. **Iniciar la aplicación:**
+
+   ```bash
+   npm run start:dev
+   ```
+
+La aplicación estará disponible en:
+
+- **API:** `http://localhost:3100/service/pendig/transversales/conf-parametria/api/v1/`
+- **Swagger:** `http://localhost:3100/service/pendig/transversales/conf-parametria/api/v1/swagger-ui/index.html`
+
+## **Características Principales**
+
+✅ **Gestión de Módulos**: Define fuentes de datos y sus configuraciones  
+✅ **Configuración de Entidades**: Mapea tablas y sus operaciones permitidas  
+✅ **Gestión de Atributos**: Define campos, tipos de datos y validaciones  
+✅ **Orquestador**: Comunica con APIs template para ejecutar operaciones  
+✅ **Validaciones**: Validación automática de datos y configuraciones  
+✅ **Paginación**: Soporte nativo para listados paginados  
+✅ **Filtros**: Sistema de filtrado flexible  
+✅ **Logging**: Trazabilidad completa de operaciones  
+✅ **API RESTful**: Endpoints bien estructurados y documentados

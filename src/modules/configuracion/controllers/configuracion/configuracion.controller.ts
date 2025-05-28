@@ -15,14 +15,4 @@ export class ConfiguracionController {
     const resultado = await this.configuracionService.getConfiguracion(idEntidad);
     return new ResponseDto(resultado);
   }
-
-  @Get('obtenerPorModulo')
-  obtenerConfiguracionPorModulo(@Query('idModulo') idModulo: string) {
-    if (!idModulo) {
-      throw new BadRequestException('El QueryParam idModulo es requerido');
-    }
-
-    const resultado = this.configuracionService.getConfiguracionPorModulo(idModulo);
-    return new ResponseDto(resultado);
-  }
 }

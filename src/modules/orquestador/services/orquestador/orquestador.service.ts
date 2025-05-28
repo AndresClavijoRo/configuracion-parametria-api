@@ -4,6 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DynamicOperationDto } from '../../dto/dynamic-operation.dto';
 import { firstValueFrom } from 'rxjs';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class OrquestadorService {
@@ -27,7 +28,7 @@ export class OrquestadorService {
       const { endpoint, ...templateOperation } = operacion;
 
       const response = await firstValueFrom(
-        this.httpService.post(
+        this.httpService.post<{ data?: { data: any; status?: { statusDescription?: string } } }>(
           `${endpoint}/service/pendig/transversales/template-parametria/api/v1/crud`,
           templateOperation,
           {
@@ -41,10 +42,11 @@ export class OrquestadorService {
       return new ResponseDto(
         response.data?.data || null,
         response.status,
-        response.data?.status?.statusDescription || 'Operación ejecutada exitosamente',
+        (response.data?.data?.status?.statusDescription as string) ||
+          'Operación ejecutada exitosamente',
       );
-    } catch (error) {
-      if (error.response) {
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response) {
         const statusCode = error.response.status;
         const errorMessage =
           error.response.data?.data?.requestError || error.response.data?.message || error.message;
@@ -58,7 +60,7 @@ export class OrquestadorService {
           statusCode,
           `Error en la operación: ${errorMessage}`,
         );
-      } else if (error.request) {
+      } else if (error instanceof AxiosError && error.request) {
         return new ResponseDto(
           {
             response: null,
@@ -72,7 +74,7 @@ export class OrquestadorService {
         return new ResponseDto(
           {
             response: null,
-            error: error.message || 'Error interno del servidor',
+            error: error instanceof Error ? error.message : 'Error interno del servidor',
           },
           400,
           'Error en el procesamiento de la operación',
@@ -86,11 +88,8 @@ export class OrquestadorService {
    * @param operacion Operación a validar
    */
   private validateOperation(operacion: DynamicOperationDto): void {
-    // Validaciones específicas por tipo de operación
     switch (operacion.type) {
       case TipoOperacion.GET_ONE:
-      case TipoOperacion.UPDATE:
-      case TipoOperacion.PATCH:
       case TipoOperacion.DELETE:
         if (!operacion.id) {
           throw new BadRequestException(`La operación ${operacion.type} requiere un ID`);
@@ -98,9 +97,21 @@ export class OrquestadorService {
         break;
 
       case TipoOperacion.CREATE:
+        if (
+          !operacion.data ||
+          typeof operacion.data !== 'object' ||
+          Object.keys(operacion.data as object).length === 0
+        ) {
+          throw new BadRequestException(`La operación ${operacion.type} requiere datos`);
+        }
+        break;
+
       case TipoOperacion.UPDATE:
       case TipoOperacion.PATCH:
-        if (!operacion.data || Object.keys(operacion.data).length === 0) {
+        if (!operacion.id) {
+          throw new BadRequestException(`La operación ${operacion.type} requiere un ID`);
+        }
+        if (!operacion.data || Object.keys(operacion.data as object).length === 0) {
           throw new BadRequestException(`La operación ${operacion.type} requiere datos`);
         }
         break;
@@ -142,8 +153,9 @@ export class OrquestadorService {
         200,
         'Connection successful',
       );
-    } catch (error) {
-      this.logger.error(`Error connecting to template: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logger.error(`Error connecting to template: ${errorMessage}`);
 
       return new ResponseDto(
         {
