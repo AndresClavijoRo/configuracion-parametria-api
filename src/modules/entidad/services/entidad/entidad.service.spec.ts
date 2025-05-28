@@ -177,14 +177,14 @@ describe('EntidadService', () => {
 
       mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
-      // El servicio SIEMPRE filtra solo entidades activas, aunque no se pase filtro
-      const result = await service.findAll(mockModuloId);
+      // Sin filtros: debe devolver todas las entidades (activas e inactivas)
+      const resultSinFiltro = await service.findAll(mockModuloId);
+      expect(resultSinFiltro.response).toEqual(mockModulo.entidades);
 
-      // El resultado debe contener solo entidades activas
-      const activas = [mockEntidadData];
-      // Filtrar manualmente las activas del mock para comparar correctamente
-      const soloActivas = [mockEntidadData, entidadInactiva].filter((e) => e.activo);
-      expect(result.response).toEqual(soloActivas);
+      // Con filtro vacío: debe devolver solo las activas
+      const resultSoloActivas = await service.findAll(mockModuloId, {});
+      const soloActivas = mockModulo.entidades.filter((e) => e.activo === true);
+      expect(resultSoloActivas.response).toEqual(soloActivas);
     });
   });
 
