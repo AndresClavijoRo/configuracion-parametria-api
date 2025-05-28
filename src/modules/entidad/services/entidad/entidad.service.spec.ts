@@ -47,7 +47,7 @@ describe('EntidadService', () => {
 
     // Mock del modelo Mongoose con funciones que retornan objetos con exec()
     mockModuloModel = {
-      findOne: jest.fn(() => mockQuery),
+      findOne: jest.fn(),
       findById: jest.fn(),
       findOneAndUpdate: jest.fn(),
     };
@@ -77,8 +77,11 @@ describe('EntidadService', () => {
 
   describe('findAll', () => {
     beforeEach(() => {
-      // Reset mocks before each test in this describe block
       jest.clearAllMocks();
+      // Por defecto, findOne devuelve un objeto con exec que resuelve a null (módulo no encontrado)
+      mockModuloModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
     });
 
     it('debería retornar lista de entidades de un módulo', async () => {
@@ -89,14 +92,7 @@ describe('EntidadService', () => {
         entidades: [mockEntidadData],
       };
 
-      // Mock the complete chain: findOne().select().exec()
-      const mockSelectChain = {
-        exec: jest.fn().mockResolvedValue(mockModulo),
-      };
-
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockReturnValue(mockSelectChain),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId);
 
@@ -117,13 +113,7 @@ describe('EntidadService', () => {
     });
 
     it('debería retornar null si no encuentra el módulo', async () => {
-      const mockSelectChain = {
-        exec: jest.fn().mockResolvedValue(null),
-      };
-
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockReturnValue(mockSelectChain),
-      });
+      mockModuloModel.findOne.mockResolvedValue(null);
 
       const result = await service.findAll('507f1f77bcf86cd799439999');
 
@@ -141,13 +131,7 @@ describe('EntidadService', () => {
         entidades: [mockEntidadData],
       };
 
-      const mockSelectChain = {
-        exec: jest.fn().mockResolvedValue(mockModulo),
-      };
-
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockReturnValue(mockSelectChain),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId, filtros);
 
@@ -166,13 +150,7 @@ describe('EntidadService', () => {
         entidades: entidadesMultiples,
       };
 
-      const mockSelectChain = {
-        exec: jest.fn().mockResolvedValue(mockModulo),
-      };
-
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockReturnValue(mockSelectChain),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId, undefined, 2, 5);
 
@@ -197,18 +175,16 @@ describe('EntidadService', () => {
         entidades: [mockEntidadData, entidadInactiva],
       };
 
-      const mockSelectChain = {
-        exec: jest.fn().mockResolvedValue(mockModulo),
-      };
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockReturnValue(mockSelectChain),
-      });
-
+      // El servicio SIEMPRE filtra solo entidades activas, aunque no se pase filtro
       const result = await service.findAll(mockModuloId);
 
-      expect(result.response).toHaveLength(1);
-      expect(result.response?.[0].nombre).toBe('Entidad Test');
+      // El resultado debe contener solo entidades activas
+      const activas = [mockEntidadData];
+      // Filtrar manualmente las activas del mock para comparar correctamente
+      const soloActivas = [mockEntidadData, entidadInactiva].filter((e) => e.activo);
+      expect(result.response).toEqual(soloActivas);
     });
   });
 
@@ -509,15 +485,35 @@ describe('EntidadService', () => {
         entidades: entidadesVariadas,
       };
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockModulo),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId, filtros);
 
-      // Solo debería retornar la primera entidad que cumple todos los criterios
-      expect(result.response).toHaveLength(1);
-      expect(result.response?.[0].nombre).toBe('Test Entity');
+      // Solo debería retornar la entidad que cumple todos los criterios y está activa
+      // Filtrar manualmente las activas y que cumplan los filtros
+      const entidadEsperada = entidadesVariadas.filter((e) => {
+        if (e.activo === false) return false;
+        if (filtros.nombre && !e.nombre.toLowerCase().includes(filtros.nombre.toLowerCase()))
+          return false;
+        if (
+          filtros.nombreTabla &&
+          !e.nombreTabla.toLowerCase().includes(filtros.nombreTabla.toLowerCase())
+        )
+          return false;
+        if (
+          filtros.descripcion &&
+          !e.descripcion?.toLowerCase().includes(filtros.descripcion.toLowerCase())
+        )
+          return false;
+        if (
+          filtros.operaciones &&
+          filtros.operaciones.length > 0 &&
+          !filtros.operaciones.every((op) => e.operaciones.includes(op))
+        )
+          return false;
+        return true;
+      });
+      expect(result.response).toEqual(entidadEsperada);
     });
 
     it('debería aplicar ordenamiento personalizado', async () => {
@@ -542,9 +538,7 @@ describe('EntidadService', () => {
         entidades: entidadesDesordenadas,
       };
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockModulo),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId, undefined, 1, 10, { nombre: 'ASC' });
 
@@ -575,15 +569,47 @@ describe('EntidadService', () => {
         entidades: entidadesPorFecha,
       };
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockModulo),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId);
 
       expect(result.response?.[0].nombre).toBe('Latest');
       expect(result.response?.[1].nombre).toBe('Middle');
       expect(result.response?.[2].nombre).toBe('First');
+    });
+
+    it('debería manejar módulo sin entidades', async () => {
+      const mockModulo = {
+        _id: mockModuloId,
+        entidades: [],
+      };
+
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
+
+      const result = await service.findAll(mockModuloId);
+
+      expect(result.response).toEqual([]);
+      expect(result.paginacion?.total).toBe(0);
+      expect(result.paginacion?.paginas).toBe(0);
+    });
+
+    it('debería calcular paginación correctamente with números decimales', async () => {
+      const entidadesMultiples = Array.from({ length: 23 }, (_, i) => ({
+        ...mockEntidadData,
+        _id: new Types.ObjectId(),
+        nombre: `Entidad ${i + 1}`,
+      }));
+
+      const mockModulo = {
+        _id: mockModuloId,
+        entidades: entidadesMultiples,
+      };
+
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
+
+      const result = await service.findAll(mockModuloId);
+
+      expect(result.paginacion?.paginas).toBe(3); // 23 / 10 = 2.3 -> 3 páginas
     });
   });
 
@@ -594,9 +620,7 @@ describe('EntidadService', () => {
         entidades: [],
       };
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockModulo),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId);
 
@@ -617,9 +641,7 @@ describe('EntidadService', () => {
         entidades: entidadesMultiples,
       };
 
-      mockModuloModel.findOne.mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockModulo),
-      });
+      mockModuloModel.findOne.mockResolvedValue(mockModulo);
 
       const result = await service.findAll(mockModuloId);
 
